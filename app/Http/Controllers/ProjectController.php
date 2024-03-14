@@ -264,6 +264,10 @@ class ProjectController extends Controller
         return Excel::download(new RabExport($id), $name);
     }
 
+    public function recap_rab_posted($id){
+        
+    }
+
     public function post_update_project(Request $request, $id){
         try{
             Validator::make($request->all(), [
