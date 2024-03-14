@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Exports\RecapMaterialAndPriceExport;
 use App\Exports\RecapMaterialExport;
 use App\Exports\RabExport;
+use App\Exports\RabExportPosted;
 
 use App\Models\Contractor;
 use App\Models\Contractor_on_project;
@@ -18,6 +19,7 @@ use App\Models\Job_on_project;
 use App\Models\Material;
 use App\Models\Material_of_job;
 use App\Models\Material_of_job_project;
+use App\Models\Material_category;
 use App\Models\Project_summary;
 use Exception;
 use Maatwebsite\Excel\Facades\Excel;
@@ -252,6 +254,16 @@ class ProjectController extends Controller
 
     public function export_material_and_price($id){
         $project = Project_summary::find($id);
+        if($project->status == 'posted'){
+            return $this->export_material_and_price_posted($id)
+        }
+        // dd($project->id);
+        $name = 'RekapMaterialPrice-('.$project->id.').xlsx';
+        return Excel::download(new RecapMaterialAndPriceExport($id), $name);
+    }
+
+    public function export_material_and_price_posted($id){
+        $project = Project_summary::find($id);
         // dd($project->id);
         $name = 'RekapMaterialPrice-('.$project->id.').xlsx';
         return Excel::download(new RecapMaterialAndPriceExport($id), $name);
@@ -259,13 +271,20 @@ class ProjectController extends Controller
 
     public function recap_rab($id){
         $project = Project_summary::find($id);
+        if($project->status == 'posted'){
+            
+            return $this->recap_rab_posted($id);
+        }
         // dd($project->id);
         $name = 'RekapRAB-('.$project->id.').xlsx';
         return Excel::download(new RabExport($id), $name);
     }
 
     public function recap_rab_posted($id){
-        
+        $project = Project_summary::find($id);
+        // dd($project->id);
+        $name = 'RekapRAB-('.$project->id.').xlsx';
+        return Excel::download(new RabExportPosted($id), $name);
     }
 
     public function post_update_project(Request $request, $id){
@@ -353,7 +372,7 @@ class ProjectController extends Controller
                 $material_of_job_project->sub_material_category_id = $material_of_job->material->sub_material_category_id;
                 $material_of_job_project->sub_material_category_name = $material_of_job->material->sub_material_category->sub_material;
                 $material_of_job_project->material_id = $material_of_job->material->id;
-                $material_of_job_project->material_name = $material_of_job->material->id;
+                $material_of_job_project->material_name = $material_of_job->material->material_name;
                 $material_of_job_project->qty = $material_of_job->qty;
                 $material_of_job_project->unit =  $material_of_job->material->unit;
                 $material_of_job_project->price = $material_of_job->material->price;
