@@ -8,7 +8,7 @@ use App\Exports\RecapMaterialAndPriceExport;
 use App\Exports\RecapMaterialExport;
 use App\Exports\RabExport;
 use App\Exports\RabExportPosted;
-
+use App\Exports\RecapMaterialAndPriceExportPosted;
 use App\Models\Contractor;
 use App\Models\Contractor_on_project;
 use App\Models\Job;
@@ -255,7 +255,7 @@ class ProjectController extends Controller
     public function export_material_and_price($id){
         $project = Project_summary::find($id);
         if($project->status == 'posted'){
-            return $this->export_material_and_price_posted($id)
+            return $this->export_material_and_price_posted($id);
         }
         // dd($project->id);
         $name = 'RekapMaterialPrice-('.$project->id.').xlsx';
@@ -266,7 +266,7 @@ class ProjectController extends Controller
         $project = Project_summary::find($id);
         // dd($project->id);
         $name = 'RekapMaterialPrice-('.$project->id.').xlsx';
-        return Excel::download(new RecapMaterialAndPriceExport($id), $name);
+        return Excel::download(new RecapMaterialAndPriceExportPosted($id), $name);
     }
 
     public function recap_rab($id){

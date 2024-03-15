@@ -55,6 +55,7 @@ class RecapMaterialAndPriceExport implements FromView
             }
             $i++;
         }
+        // dd($data_job_on_project);
         return view('exports.recap_material_and_price', ['data_job_on_project'=>$data_job_on_project]);
     }
 }
