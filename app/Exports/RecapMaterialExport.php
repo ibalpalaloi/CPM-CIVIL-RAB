@@ -30,15 +30,26 @@ class RecapMaterialExport implements FromView
             $material_on_job = Material_of_job::where('job_id', $data->job_id)->get();
             foreach($material_on_job as $material_on_job_){
                 $material = Material::where('id', $material_on_job_->material_id)->first();
-                if(count($list_materials) > 0){
-                    $push = true;
-                    for($i = 0; count($list_materials) > $i; $i++){
-                        if($list_materials[$i]['material_id'] == $material->id){
-                            $list_materials[$i]['qty'] = $list_materials[$i]['qty'] + ($data->qty * $material_on_job_->qty);
-                            $push = false;
+                if(!empty($material)){
+                    if(count($list_materials) > 0){
+                        $push = true;
+                        for($i = 0; count($list_materials) > $i; $i++){
+                            if($list_materials[$i]['material_id'] == $material->id){
+                                $list_materials[$i]['qty'] = $list_materials[$i]['qty'] + ($data->qty * $material_on_job_->qty);
+                                $push = false;
+                            }
                         }
-                    }
-                    if($push == true){
+                        if($push == true){
+                            $list = array(
+                                "material_id" => $material->id,
+                                "unit" => $material->unit,
+                                "material_name" => $material->material_name,
+                                "qty" => $data->qty * $material_on_job_->qty,
+                            );
+        
+                            array_push($list_materials, $list);
+                        }
+                    }else{
                         $list = array(
                             "material_id" => $material->id,
                             "unit" => $material->unit,
@@ -48,16 +59,8 @@ class RecapMaterialExport implements FromView
     
                         array_push($list_materials, $list);
                     }
-                }else{
-                    $list = array(
-                        "material_id" => $material->id,
-                        "unit" => $material->unit,
-                        "material_name" => $material->material_name,
-                        "qty" => $data->qty * $material_on_job_->qty,
-                    );
-
-                    array_push($list_materials, $list);
                 }
+                
                 
             }
         }

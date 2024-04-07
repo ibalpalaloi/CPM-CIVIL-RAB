@@ -21,14 +21,14 @@
                 <td>{{ $data['qty'] }}</td>
                 <td>{{ $data['unit'] }}</td>
                 <td>{{ number_format($data['price'],0,',','.')}}</td>
-                <th>
+                <td>
                     @if ($data['status'] == 'unposted')
+                        <button onclick="edit_job_on_project('{{ $data['id'] }}')" class="btn btn-warning btn-sm mr-1 mb-1"><i class="ti ti-pencil"></i></button>
                         <button onclick="delete_job_on_project('{{ $data['id'] }}')" class="btn btn-danger btn-sm"><i class="ti ti-trash"></i></button>
-                        
                     @else
                         
                     @endif
-                </th>
+                </td>
             </tr>
         @endforeach
     </tbody>

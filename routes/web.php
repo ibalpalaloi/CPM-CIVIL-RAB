@@ -78,9 +78,11 @@ Route::middleware(['isLogin'])->group(function () {
     // Route::get('/project/get_d_job_on_project/{id}', [ProjectController::class, 'get_d_job_on_project']);
     Route::get('/project/get_table_job_on_project/{id}', [ProjectController::class, 'get_table_job_on_project']);
     Route::get('/project/get_job/{id}', [ProjectController::class, 'get_job']);
+    Route::get('/project/get_d_job_on_project/{id}', [ProjectController::class, 'get_d_job_on_project']);
     Route::post('/project/post_new_job/{project_id}/{job_id}', [ProjectController::class, 'post_new_job']);
     Route::get('/project/delete_d_job_on_project/{id}', [ProjectController::class, 'delete_d_job_on_project']);
     Route::delete('/project/project_summary/delete/{id}', [ProjectController::class, 'delete_project_summary']);
+    Route::post('/project/post_edit_job/{id}', [ProjectController::class, 'post_edit_job']);
 
     Route::get('/project/export/material_and_price/{id}', [ProjectController::class, 'export_material_and_price']);
     Route::get('/project/export/list_materials/{id}', [ProjectController::class, 'export_recap_material']);

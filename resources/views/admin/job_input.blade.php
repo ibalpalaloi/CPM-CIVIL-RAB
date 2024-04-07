@@ -168,10 +168,11 @@
                             <div class="col-sm-7">
 
                                 <input type="text" class="form-control form-control-sm" id="inputSearchJob">
-                                
+
                             </div>
                             <div class="col-sm-3">
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="getTableSearchJob()">seach</button>
+                                <button type="button" class="btn btn-secondary btn-sm"
+                                    onclick="getTableSearchJob()">seach</button>
                             </div>
                         </div>
 
@@ -213,8 +214,8 @@
                         <input type="text" id="inputIdMaterial" hidden>
                         <div class="mb-3">
                             <label for="exampleInputEmail1" class="form-label">Material Kategori</label>
-                            <select onchange="getMaterialOfMaterialCategory()" class="form-select" id="materialCategory"
-                                aria-label="Default select example" required>
+                            <select onchange="getMaterialOfMaterialCategory()" class="form-select select2bs4modal"
+                                id="materialCategory" aria-label="Default select example" required>
                                 <option value="first" selected>--select--</option>
                                 @foreach ($materialCategories as $data)
                                     <option value="{{ $data->id }}">{{ $data->material_category }}</option>
@@ -223,7 +224,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="exampleInputEmail1" class="form-label">Material</label>
-                            <select onchange="" class="form-select" id="inputAddMaterial"
+                            <select onchange="" class="form-select select2bs4modal" id="inputAddMaterial"
                                 aria-label="Default select example" required>
                                 <option value="first" selected>--select--</option>
 
@@ -285,6 +286,19 @@
         var job = '';
         var job_category = {!! json_encode($job_category) !!}
         var materialCategories = {!! json_encode($materialCategories) !!}
+
+        $(function() {
+
+            //Initialize Select2 Elements
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            })
+
+            $('.select2bs4modal').select2({
+                theme: 'bootstrap4',
+                dropdownParent: $('#modalAddItemOfJob')
+            })
+        });
 
         $.ajaxSetup({
             headers: {

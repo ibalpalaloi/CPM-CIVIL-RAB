@@ -310,6 +310,54 @@
             </div>
         </div>
     </div>
+
+    {{-- edit job --}}
+    <div class="modal fade" id="modalEditJobQuantity" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Job</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="#" id="form_edit_job">
+                        <input type="text" id="inputEditModalJobId" hidden>
+                        <div class="mb-3 row">
+                            <label for="inputPassword" class="col-sm-4 col-form-label">Pekerjaan</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control form-control-sm" id="inputEdiModalJobName"
+                                    disabled>
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label for="inputPassword" class="col-sm-4 col-form-label">Volume</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control form-control-sm" id="inputEditModalJobQty">
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label for="inputPassword" class="col-sm-4 col-form-label">Desc</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control form-control-sm" id="inputEditModalJobDesc">
+                            </div>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </div>
+                    </form>
+
+
+                </div>
+                {{-- <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary">Save</button>
+                </div> --}}
+
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('script')
@@ -331,6 +379,32 @@
             event.preventDefault();
             post_new_job();
         })
+
+        $('#form_edit_job').on('submit', function(event) {
+            event.preventDefault();
+            post_edit_job();
+        })
+
+        function post_edit_job(){
+            var id = $('#inputEditModalJobId').val()
+            var qty = $('#inputEditModalJobQty').val()
+            var desc = $('#inputEditModalJobDesc').val();
+            $.ajax({
+                url: "{{ url('/') }}/project/post_edit_job/" + id,
+                method: "POST",
+                data: {
+                    'qty': qty,
+                    'desc': desc
+
+                },
+                success:function(data){
+                    if(data.statusCode == 200){
+                        $('#modalEditJobQuantity').modal('hide');
+                        get_table_job_on_project(project['id'])
+                    }
+                }
+            })
+        }
 
         function print_material_and_price() {
             if (project != '') {
@@ -370,6 +444,24 @@
                 }
             } else {}
 
+            
+        }
+
+        function edit_job_on_project(id){
+            $.ajax({
+                url: "{{ url('/') }}/project/get_d_job_on_project/" + id,
+                method: "GET",
+                success:function(data){
+                    if(data.statusCode == 200){
+                        $('#inputEditModalJobId').val(data.d_job_on_project['id'])
+                        $('#inputEdiModalJobName').val(data.d_job_on_project['job_name'])
+                        $('#inputEditModalJobQty').val(data.d_job_on_project['qty'])
+                        $('#inputEditModalJobDesc').val(data.d_job_on_project['desc'])
+
+                        $('#modalEditJobQuantity').modal('show')
+                    }
+                }
+            })
         }
 
         function clear_job() {

@@ -10,6 +10,9 @@
   <link rel="shortcut icon" type="image/png" href="{{asset('assets/images/logos/favicon.png')}}" />
   <link rel="stylesheet" href="{{asset('assets/css/styles.min.css')}}" />
   <link rel="stylesheet" href="{{asset('assets/css/jquery.dataTables.css')}}" />
+  <link rel="stylesheet" href="{{asset('assets/select2/css/select2.min.css')}}">
+  <link rel="stylesheet" href="{{asset('assets/select2-bootstrap4-theme/select2-bootstrap4.min.css')}}">
+
 </head>
 
 <body>
@@ -34,6 +37,8 @@
   <script src="{{asset('assets/libs/simplebar/dist/simplebar.js')}}"></script>
   <script src="{{asset('assets/js/dashboard.js')}}"></script>
   <script src="{{asset('assets/js/jquery.dataTables.js')}}"></script>
+  {{-- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> --}}
+  <script src="{{asset('assets/select2/js/select2.full.min.js')}}"></script>
   <script>
     function format_number_rupiah(value){
             var format = value.toLocaleString('en-US');

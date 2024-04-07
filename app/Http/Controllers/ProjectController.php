@@ -8,6 +8,7 @@ use App\Exports\RecapMaterialAndPriceExport;
 use App\Exports\RecapMaterialExport;
 use App\Exports\RabExport;
 use App\Exports\RabExportPosted;
+use App\Exports\RecapMaterialExportPosted;
 use App\Exports\RecapMaterialAndPriceExportPosted;
 use App\Models\Contractor;
 use App\Models\Contractor_on_project;
@@ -34,7 +35,7 @@ class ProjectController extends Controller
     {
         $contractors = Contractor::all();
         $job_category = Job_category::all();
-        return view('project.project', ['contractors' => $contractors, 'job_category'=>$job_category]);
+        return view('project.project', ['contractors' => $contractors, 'job_category' => $job_category]);
     }
 
     public function post_new_project(Request $request)
@@ -77,11 +78,11 @@ class ProjectController extends Controller
     {
         $data_jobs = [];
         $jobs = Job::where('job_name', 'LIKE', '%' . $request->key . '%')
-                    ->where('job_category_id', $request->jobcategoryid)
-                    ->get();
+            ->where('job_category_id', $request->jobcategoryid)
+            ->get();
         // $jobs = $jobs->toArray();
-        $i=0;
-        foreach($jobs as $job){
+        $i = 0;
+        foreach ($jobs as $job) {
             $data_jobs[$i]['job_id'] = $job->id;
             $data_jobs[$i]['job_category'] = $job->job_category->job_category;
             $data_jobs[$i]['job_name'] = $job->job_name;
@@ -91,13 +92,12 @@ class ProjectController extends Controller
                 inner join material 
                 on material_of_job.material_id = material.id 
                 where material_of_job.job_id = :job_id",
-                ['job_id'=>$job->id]
+                ['job_id' => $job->id]
             );
             // dd($total_price[0]->total);
-            if(count($total_price)>0){
+            if (count($total_price) > 0) {
                 $data_jobs[$i]['total_price'] = $total_price[0]->total;
-
-            }else{
+            } else {
                 $data_jobs[$i]['total_price'] = 0;
             }
             $i++;
@@ -120,9 +120,9 @@ class ProjectController extends Controller
     {
         try {
             $project = Project_summary::find($id);
-            if($project->status == 'posted'){
+            if ($project->status == 'posted') {
                 $contractor = Contractor_on_project::where('project_summary_id', $project->id)->first();
-            }else{
+            } else {
                 $contractor = d_contractor_on_project::where('project_summary_id', $project->id)->first();
             }
             return response()->json([
@@ -139,7 +139,7 @@ class ProjectController extends Controller
     {
         try {
             $project_summary = Project_summary::find($id);
-            if($project_summary->status == 'posted'){
+            if ($project_summary->status == 'posted') {
                 return $this->get_table_job_on_project_posted($id);
             }
             $data_job_on_project = [];
@@ -169,12 +169,13 @@ class ProjectController extends Controller
         }
     }
 
-    public function get_table_job_on_project_posted($id){
+    public function get_table_job_on_project_posted($id)
+    {
         $job_on_project = Job_on_project::where('project_summary_id', $id)->get();
         $data_job_on_project = [];
         // dd($job_on_project);
         $i = 0;
-        foreach($job_on_project as $data){
+        foreach ($job_on_project as $data) {
             $data_job_on_project[$i]['id'] = $data->id;
             $data_job_on_project[$i]['job_category'] = $data->job_category;
             $data_job_on_project[$i]['job_name'] = $data->job_name;
@@ -184,7 +185,7 @@ class ProjectController extends Controller
             $data_job_on_project[$i]['desc'] = $data->desc_job_on_project;
             $materials = Material_of_job_project::where('job_on_project_id', $data->id)->get();
             $price = 0;
-            foreach($materials as $material){
+            foreach ($materials as $material) {
                 $price = $data->qty * $material->qty * $material->price;
             }
             $data_job_on_project[$i]['price'] = $price;
@@ -201,6 +202,35 @@ class ProjectController extends Controller
         try {
             $job = Job::find($id);
             return response()->json(['job' => $job, 'statusCode' => 200], 200);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    function post_edit_job(Request $request, $id)
+    {
+        try {
+            $d_job_on_project = D_job_on_project::find($id);
+            if (!empty($d_job_on_project)) {
+                $d_job_on_project->qty = $request->qty;
+                $d_job_on_project->desc = $request->desc;
+                $d_job_on_project->save();
+            }
+            return response()->json(['statusCode' => 200], 200);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    public function get_d_job_on_project($id)
+    {
+        try {
+            if ($id != null) {
+                $d_job_on_project = D_job_on_project::where('id', $id)->first();
+                $job_on_project = $d_job_on_project->toArray();
+                $job_on_project['job_name'] = $d_job_on_project->project_summary->project_name;
+                return response()->json(['d_job_on_project' => $job_on_project, 'statusCode' => 200], 200);
+            }
         } catch (Exception $e) {
             return $e->getMessage();
         }
@@ -252,43 +282,48 @@ class ProjectController extends Controller
         }
     }
 
-    public function export_material_and_price($id){
+    public function export_material_and_price($id)
+    {
         $project = Project_summary::find($id);
-        if($project->status == 'posted'){
+        if ($project->status == 'posted') {
             return $this->export_material_and_price_posted($id);
         }
         // dd($project->id);
-        $name = 'RekapMaterialPrice-('.$project->id.').xlsx';
+        $name = 'RekapMaterialPrice-(' . $project->id . ').xlsx';
         return Excel::download(new RecapMaterialAndPriceExport($id), $name);
     }
 
-    public function export_material_and_price_posted($id){
+    public function export_material_and_price_posted($id)
+    {
         $project = Project_summary::find($id);
         // dd($project->id);
-        $name = 'RekapMaterialPrice-('.$project->id.').xlsx';
+        $name = 'RekapMaterialPrice-(' . $project->id . ').xlsx';
         return Excel::download(new RecapMaterialAndPriceExportPosted($id), $name);
     }
 
-    public function recap_rab($id){
+    public function recap_rab($id)
+    {
         $project = Project_summary::find($id);
-        if($project->status == 'posted'){
-            
+        if ($project->status == 'posted') {
+
             return $this->recap_rab_posted($id);
         }
         // dd($project->id);
-        $name = 'RekapRAB-('.$project->id.').xlsx';
+        $name = 'RekapRAB-(' . $project->id . ').xlsx';
         return Excel::download(new RabExport($id), $name);
     }
 
-    public function recap_rab_posted($id){
+    public function recap_rab_posted($id)
+    {
         $project = Project_summary::find($id);
         // dd($project->id);
-        $name = 'RekapRAB-('.$project->id.').xlsx';
+        $name = 'RekapRAB-(' . $project->id . ').xlsx';
         return Excel::download(new RabExportPosted($id), $name);
     }
 
-    public function post_update_project(Request $request, $id){
-        try{
+    public function post_update_project(Request $request, $id)
+    {
+        try {
             Validator::make($request->all(), [
                 'project_name' => 'required',
                 'building_name' => 'required',
@@ -308,26 +343,36 @@ class ProjectController extends Controller
             $d_contractor_on_project->contractor_id = $request->contractor_id;
             $d_contractor_on_project->save();
 
-            return response()->json(['statusCode'=>200], 200);
-        }
-        catch (Exception $e) {
+            return response()->json(['statusCode' => 200], 200);
+        } catch (Exception $e) {
             return $e->getMessage();
         }
     }
 
-    public function export_recap_material($project_id){
+    public function export_recap_material($project_id)
+    {
         $project = Project_summary::find($project_id);
-        $name = 'RekapMaterial-('.$project->id.').xlsx';
+        if ($project->status == 'posted') {
+            return $this->export_recap_material_posted($project_id);
+        }
+        $name = 'RekapMaterial-(' . $project->id . ').xlsx';
         return Excel::download(new RecapMaterialExport($project_id), $name);
-
     }
 
-    
+    public function export_recap_material_posted($project_id)
+    {
+        $project = Project_summary::find($project_id);
+        $name = 'RekapMaterial-(' . $project->id . ').xlsx';
+        return Excel::download(new RecapMaterialExportPosted($project_id), $name);
+    }
 
-    public function post_project($id){
+
+
+    public function post_project($id)
+    {
         $project = Project_summary::find($id);
         $d_contractor_on_project = D_contractor_on_project::where('project_summary_id', $id)->get();
-        foreach($d_contractor_on_project as $data){
+        foreach ($d_contractor_on_project as $data) {
             $db_id = $this->generate_code_with_time();
             $db_id = 'COP-' . $db_id;
             $contractor_on_project = new Contractor_on_project;
@@ -342,9 +387,9 @@ class ProjectController extends Controller
 
         $d_job_on_project = D_job_on_project::where('project_summary_id', $id)->get();
         $y = 1;
-        foreach($d_job_on_project as $data){
+        foreach ($d_job_on_project as $data) {
             $db_id = $this->generate_code_with_time();
-            $db_id = 'JOP-' . $db_id.$y;
+            $db_id = 'JOP-' . $db_id . $y;
             $job_on_project = new Job_on_project;
             $job_on_project->id = $db_id;
             $job_on_project->project_summary_id = $id;
@@ -360,9 +405,9 @@ class ProjectController extends Controller
             $y++;
 
             $i = 1;
-            foreach($data->job->material_of_job as $material_of_job){
+            foreach ($data->job->material_of_job as $material_of_job) {
                 $db_id = $this->generate_code_with_time();
-                $db_id = 'MOJP-' . $db_id .$y.$i;
+                $db_id = 'MOJP-' . $db_id . $y . $i;
                 $material_of_job_project = new Material_of_job_project;
                 $material_of_job_project->id = $db_id;
                 $material_of_job_project->project_summary_id = $id;
@@ -388,6 +433,6 @@ class ProjectController extends Controller
         $project->status = 'posted';
         $project->save();
 
-        return response()->json(['statusCode'=>200],200);
+        return response()->json(['statusCode' => 200], 200);
     }
 };
