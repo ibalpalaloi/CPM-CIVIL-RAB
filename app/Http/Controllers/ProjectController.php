@@ -213,6 +213,7 @@ class ProjectController extends Controller
             $d_job_on_project = D_job_on_project::find($id);
             if (!empty($d_job_on_project)) {
                 $d_job_on_project->qty = $request->qty;
+                $d_job_on_project->job_id = $request->job_id;
                 $d_job_on_project->desc = $request->desc;
                 $d_job_on_project->save();
             }
@@ -228,8 +229,11 @@ class ProjectController extends Controller
             if ($id != null) {
                 $d_job_on_project = D_job_on_project::where('id', $id)->first();
                 $job_on_project = $d_job_on_project->toArray();
-                $job_on_project['job_name'] = $d_job_on_project->project_summary->project_name;
-                return response()->json(['d_job_on_project' => $job_on_project, 'statusCode' => 200], 200);
+                $job_on_project['job_name'] = $d_job_on_project->job->job_name;
+
+                $jobs = Job::all();
+                $jobs = $jobs->toArray();
+                return response()->json(['d_job_on_project' => $job_on_project, 'jobs'=>$jobs,'statusCode' => 200], 200);
             }
         } catch (Exception $e) {
             return $e->getMessage();

@@ -314,7 +314,7 @@
     {{-- edit job --}}
     <div class="modal fade" id="modalEditJobQuantity" tabindex="-1" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Edit Job</h5>
@@ -326,8 +326,10 @@
                         <div class="mb-3 row">
                             <label for="inputPassword" class="col-sm-4 col-form-label">Pekerjaan</label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control form-control-sm" id="inputEdiModalJobName"
-                                    disabled>
+                                {{-- <input type="text" class="form-control form-control-sm" id="inputEdiModalJobName"
+                                    disabled> --}}
+                                <select name="" id="inputEditModalJobName" class="form-select select2bs4modal" aria-label="Default select example" required>
+                                </select>
                             </div>
                         </div>
                         <div class="mb-3 row">
@@ -368,6 +370,19 @@
             }
         });
 
+        $(function() {
+
+            //Initialize Select2 Elements
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            })
+
+            $('.select2bs4modal').select2({
+                theme: 'bootstrap4',
+                dropdownParent: $('#modalEditJobQuantity')
+            })
+        });
+
         var contractors = {!! json_encode($contractors) !!}
         var project = ''
 
@@ -385,8 +400,9 @@
             post_edit_job();
         })
 
-        function post_edit_job(){
+        function post_edit_job() {
             var id = $('#inputEditModalJobId').val()
+            var job_id = $('#inputEditModalJobName').val()
             var qty = $('#inputEditModalJobQty').val()
             var desc = $('#inputEditModalJobDesc').val();
             $.ajax({
@@ -394,11 +410,11 @@
                 method: "POST",
                 data: {
                     'qty': qty,
-                    'desc': desc
-
+                    'desc': desc,
+                    'job_id': job_id
                 },
-                success:function(data){
-                    if(data.statusCode == 200){
+                success: function(data) {
+                    if (data.statusCode == 200) {
                         $('#modalEditJobQuantity').modal('hide');
                         get_table_job_on_project(project['id'])
                     }
@@ -444,20 +460,29 @@
                 }
             } else {}
 
-            
+
         }
 
-        function edit_job_on_project(id){
+        function edit_job_on_project(id) {
             $.ajax({
                 url: "{{ url('/') }}/project/get_d_job_on_project/" + id,
                 method: "GET",
-                success:function(data){
-                    if(data.statusCode == 200){
+                success: function(data) {
+                    if (data.statusCode == 200) {
+                        var jobs = data.jobs;
                         $('#inputEditModalJobId').val(data.d_job_on_project['id'])
-                        $('#inputEdiModalJobName').val(data.d_job_on_project['job_name'])
+                        // $('#inputEdiModalJobName').val(data.d_job_on_project['job_name'])
                         $('#inputEditModalJobQty').val(data.d_job_on_project['qty'])
                         $('#inputEditModalJobDesc').val(data.d_job_on_project['desc'])
-
+                        var string = ``;
+                        jobs.forEach(job => {
+                            string = string + `<option value="${job.id}"`
+                            if (job.job_name == data.d_job_on_project['job_name']) {
+                                string = string + 'selected'
+                            }
+                            string = string + `>${job.job_name}</option>`
+                        });
+                        $('#inputEditModalJobName').html(string)
                         $('#modalEditJobQuantity').modal('show')
                     }
                 }
